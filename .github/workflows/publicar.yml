@@ -13,9 +13,9 @@ jobs:
   publicar:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -40,7 +40,7 @@ jobs:
         run: build.bat
 
       - name: Criar o Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: dist/ConversorFTEX.exe
           generate_release_notes: true
