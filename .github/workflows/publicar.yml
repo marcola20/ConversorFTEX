@@ -1,0 +1,46 @@
+name: Publicar versão
+
+# Roda quando você envia uma tag começando com "v" (ex.: v1.0.1).
+# Testa, gera o ConversorFTEX.exe e cria o Release com o .exe anexado.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Conferir se a tag bate com a versão do código
+        shell: python
+        run: |
+          import os, re
+          tag = os.environ['GITHUB_REF_NAME'].lstrip('vV')
+          codigo = open('conversor_ftex/__init__.py', encoding='utf-8').read()
+          versao = re.search(r'__version__ = "(.+?)"', codigo).group(1)
+          if versao != tag:
+              raise SystemExit(f'A tag v{tag} não bate com __version__ = "{versao}" em conversor_ftex/__init__.py')
+
+      - name: Testes
+        run: python -m unittest -v
+
+      - name: Gerar o .exe
+        shell: cmd
+        run: build.bat
+
+      - name: Criar o Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ConversorFTEX.exe
+          generate_release_notes: true
